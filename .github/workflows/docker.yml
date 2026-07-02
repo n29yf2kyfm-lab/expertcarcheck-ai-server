@@ -30,6 +30,5 @@ jobs:
           context: .
           push: true
           tags: alamk123/ai-mechanic:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          no-cache: true
           platforms: linux/amd64
