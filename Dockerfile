@@ -46,20 +46,7 @@ COPY handler.py /workspace/handler.py
 COPY obd_database.py /workspace/obd_database.py
 
 # Pre-download small models (speeds up cold start)
-RUN python3 -c "
-import torch
-from transformers import pipeline
-print('Preloading Parakeet...')
-pipe = pipeline('automatic-speech-recognition', 
-    model='nvidia/parakeet-tdt-0.6b-v3',
-    device=0 if torch.cuda.is_available() else -1,
-    torch_dtype=torch.float16)
-print('Parakeet OK')
-print('Preloading Kokoro...')
-from kokoro import KModel, KPipeline
-m = KModel().to('cuda' if torch.cuda.is_available() else 'cpu').eval()
-print('Kokoro OK')
-" 2>/dev/null || echo "Models will load on first request"
+RUN python3 -c "import torch; from transformers import pipeline; pipe = pipeline('automatic-speech-recognition', model='nvidia/parakeet-tdt-0.6b-v3', device=0 if torch.cuda.is_available() else -1, torch_dtype=torch.float16); print('Parakeet OK'); from kokoro import KModel, KPipeline; m = KModel().to('cuda' if torch.cuda.is_available() else 'cpu').eval(); print('Kokoro OK')" 2>/dev/null || echo "Models will load on first request"
 
 # RunPod serverless entry point
 CMD ["python3", "-u", "handler.py"]
