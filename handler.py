@@ -181,19 +181,8 @@ def get_parakeet():
     return _models["parakeet"]
 
 def get_tripo_sr():
-    if "tripo_sr" not in _models:
-        print("[LOAD] TripoSR...", file=sys.stderr, flush=True)
-        try:
-            from tsr.system import TSR
-            model = TSR.from_pretrained("stabilityai/TripoSR", config_name="config.yaml", weight_name="model.ckpt")
-            model.renderer.set_chunk_size(8192)
-            model.to(DEVICE)
-            _models["tripo_sr"] = model
-            print("[LOAD] TripoSR ready", file=sys.stderr, flush=True)
-        except Exception as e:
-            print(f"[LOAD] TripoSR failed: {e}", file=sys.stderr, flush=True)
-            _models["tripo_sr"] = None
-    return _models["tripo_sr"]
+    """TripoSR removed — use MiDaS depth fallback instead."""
+    return None
 
 def get_midas():
     if "midas" not in _models:
@@ -415,39 +404,7 @@ def handle_generate_3d(inp):
         image.save(f.name); img_path = f.name
     
     try:
-        # Try TripoSR
-        model = get_tripo_sr()
-        if model is not None:
-            print("[GEN] TripoSR generating...", file=sys.stderr, flush=True)
-            start = time.time()
-            with torch.no_grad():
-                scene_codes = model([image], device=DEVICE)
-            res = 256 if quality == "low" else 512 if quality == "medium" else 1024
-            meshes = model.extract_mesh(scene_codes, resolution=res)
-            mesh = meshes[0]
-            
-            # Export GLB
-            import trimesh
-            tmesh = trimesh.Trimesh(vertices=mesh.vertices, faces=mesh.faces)
-            if hasattr(mesh, 'vertex_colors') and mesh.vertex_colors is not None:
-                tmesh.visual.vertex_colors = mesh.vertex_colors
-            
-            with tempfile.NamedTemporaryFile(suffix=".glb", delete=False) as f:
-                glb_path = f.name
-            tmesh.export(glb_path)
-            
-            with open(glb_path, 'rb') as f:
-                glb_data = base64.b64encode(f.read()).decode()
-            os.unlink(glb_path)
-            
-            t = _track(start)
-            return {
-                "success": True, "model_base64": glb_data, "format": "glb",
-                "method": "TripoSR", "quality": quality, "vertices": len(mesh.vertices),
-                "faces": len(mesh.faces), "elapsed": t["elapsed"], "cost_usd": t["cost_usd"]
-            }
-        
-        # Fallback: MiDaS depth
+        # 3D via MiDaS depth estimation
         return _generate_depth_fallback(image, quality)
     except Exception as e:
         import traceback
