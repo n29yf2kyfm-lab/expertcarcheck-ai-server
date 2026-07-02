@@ -417,7 +417,7 @@ def _generate_depth_fallback(image, quality):
     midas, transform = get_midas()
     if midas is None: return {"success": False, "error": "No 3D model available"}
     start = time.time()
-    input_batch = transform(image).to(DEVICE)
+    input_batch = transform(np.array(image)).to(DEVICE)
     with torch.no_grad():
         pred = midas(input_batch)
         pred = torch.nn.functional.interpolate(pred.unsqueeze(1), size=image.size[::-1], mode="bicubic", align_corners=False).squeeze()
