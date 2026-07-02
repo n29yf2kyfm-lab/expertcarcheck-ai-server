@@ -414,17 +414,23 @@ def handle_generate_3d(inp):
         os.unlink(img_path)
 
 def _generate_depth_fallback(image_pil, quality):
+    print(f"[3D] _generate_depth_fallback v10.1-fix3 called, image type: {type(image_pil)}", file=sys.stderr, flush=True)
     midas, transform = get_midas()
     if midas is None: return {"success": False, "error": "No 3D model available"}
     start = time.time()
     try:
-        img_np = np.array(image_pil.convert("RGB")).astype(np.float32) / 255.0
+        img_arr = np.array(image_pil)
+        print(f"[3D] np.array done, shape: {img_arr.shape}, dtype: {img_arr.dtype}", file=sys.stderr, flush=True)
+        img_np = img_arr.astype(np.float32) / 255.0
+        print(f"[3D] float conversion done", file=sys.stderr, flush=True)
         input_batch = transform(img_np).to(DEVICE)
+        print(f"[3D] transform done, shape: {input_batch.shape}", file=sys.stderr, flush=True)
         with torch.no_grad():
             pred = midas(input_batch)
             h, w = img_np.shape[:2]
             pred = torch.nn.functional.interpolate(pred.unsqueeze(1), size=(h, w), mode="bicubic", align_corners=False).squeeze()
         depth = pred.cpu().numpy()
+        print(f"[3D] depth computed, shape: {depth.shape}", file=sys.stderr, flush=True)
     except Exception as e:
         import traceback
         err = traceback.format_exc()
