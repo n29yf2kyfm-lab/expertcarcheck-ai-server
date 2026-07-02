@@ -38,8 +38,14 @@ RUN pip install --no-cache-dir \
     requests beautifulsoup4 \
     runpod
 
-# TripoSR for 3D generation (install from GitHub)
-RUN pip install --no-cache-dir git+https://github.com/VAST-AI-Research/TripoSR.git
+# TripoSR for 3D generation — clone manually (no setup.py in repo)
+RUN git clone https://github.com/VAST-AI-Research/TripoSR.git /tmp/tripo && \
+    pip install --no-cache-dir /tmp/tripo 2>/dev/null || \
+    (cd /tmp/tripo && pip install --no-cache-dir -e . 2>/dev/null) || \
+    (pip install --no-cache-dir omegaconf diffusers && \
+     echo "export PYTHONPATH=/tmp/tripo:\$PYTHONPATH" >> /etc/profile.d/tripo.sh) && \
+    ln -s /tmp/tripo/tsr /usr/local/lib/python3.11/site-packages/tsr 2>/dev/null || true && \
+    rm -rf /tmp/tripo/.git
 
 # Copy handler files
 COPY handler.py /workspace/handler.py
