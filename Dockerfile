@@ -1,6 +1,6 @@
 # AI MECHANIC ULTIMATE v10.1
 # Docker Hub: alamk123/ai-mechanic:latest
-ARG CACHEBUST=10
+ARG CACHEBUST=11
 FROM runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04
 
 ENV DEBIAN_FRONTEND=noninteractive

@@ -32,7 +32,13 @@ from functools import lru_cache
 # ── BOOT ───────────────────────────────────────────────────────────────────
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 GPU_NAME = torch.cuda.get_device_name(0) if torch.cuda.is_available() else "CPU"
-VRAM_GB = round(torch.cuda.get_device_properties(0).total_memory / 1e9, 1) if torch.cuda.is_available() else 0
+try:
+    VRAM_GB = round(torch.cuda.get_device_properties(0).total_memory / 1e9, 1) if torch.cuda.is_available() else 0
+except:
+    try:
+        VRAM_GB = round(torch.cuda.get_device_properties(0).total_mem / 1e9, 1) if torch.cuda.is_available() else 0
+    except:
+        VRAM_GB = 48  # Default to A6000 48GB
 USE_INT4 = VRAM_GB < 40
 GPU_COST_HR = 0.49
 
