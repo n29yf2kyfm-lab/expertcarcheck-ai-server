@@ -9,6 +9,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/cached-image
+          sudo docker image prune -af
+          df -h
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -23,5 +29,7 @@ jobs:
 
       - name: Build and push (no cache)
         run: |
-          docker build --no-cache -t alamk123/ai-mechanic:latest .
+          # Build with BOTH tags — ai-mechanic-runpod is what RunPod endpoint expects
+          docker build --no-cache -t alamk123/ai-mechanic-runpod:latest -t alamk123/ai-mechanic:latest .
+          docker push alamk123/ai-mechanic-runpod:latest
           docker push alamk123/ai-mechanic:latest

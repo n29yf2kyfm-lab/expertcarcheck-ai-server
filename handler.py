@@ -9,7 +9,7 @@ Everything in one handler:
   
 GPU: RTX A6000 48GB (fits everything)
 Idle: $0 | Active: $0.49/hr
-Version: 10.0.0-ultimate
+Version: 10.1.0-ultimate
 ================================================================================
 """
 
